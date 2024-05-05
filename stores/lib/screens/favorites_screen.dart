@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../../models/store.dart';
-import '../../providers/store_provider.dart';
+import '../../../models/store.dart'; // Import your Store class
+import '../../../providers/store_provider.dart'; // Import your StoreProvider class
 
 class FavoritesScreen extends StatelessWidget {
-  const FavoritesScreen({super.key});
+  const FavoritesScreen({Key? key});
 
   @override
   Widget build(BuildContext context) {

@@ -1,15 +1,12 @@
-// ignore_for_file: library_private_types_in_public_api
-
 import 'package:flutter/material.dart';
-import '../../models/store.dart';
-import '../../providers/store_provider.dart';
 import 'package:provider/provider.dart';
-
-import 'add_favorites_screen.dart'; // Import your add screen
-import 'favorites_screen.dart'; // Import your favorites screen
+import '../../../models/store.dart';
+import '../../../providers/store_provider.dart';
+import 'add_favorites_screen.dart'; 
+import 'favorites_screen.dart'; 
 
 class HomeScreen extends StatefulWidget {
-  const HomeScreen({super.key});
+  const HomeScreen({Key? key}) : super(key: key);
 
   @override
   _HomeScreenState createState() => _HomeScreenState();
@@ -19,7 +16,7 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     super.initState();
-    Provider.of<StoreProvider>(context, listen: false).fetchStores();
+    Provider.of<StoreProvider>(context, listen: false).initialize();
   }
 
   int _selectedIndex = 0;

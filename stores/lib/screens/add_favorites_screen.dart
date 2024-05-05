@@ -1,56 +1,59 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import '../../../models/store.dart'; // Import your Store class
+import '../../../providers/store_provider.dart'; // Import your StoreProvider class
+import 'favorites_screen.dart'; // Import the FavoritesScreen
 
 class AddToFavoritesScreen extends StatelessWidget {
-  const AddToFavoritesScreen({super.key});
+  const AddToFavoritesScreen({Key? key});
 
   @override
   Widget build(BuildContext context) {
+    final storeProvider = Provider.of<StoreProvider>(context);
+    List<Store> stores = storeProvider.stores; // Assuming you have a list of stores
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Add Store to Favorites'),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            TextFormField(
-              decoration: const InputDecoration(labelText: 'Store Name'),
-            ),
-            const SizedBox(height: 16),
-            ElevatedButton(
-              onPressed: () {
-                // Dummy data for demonstration
-                Map<dynamic, dynamic> storeData = {
-                  'id': 1,
-                  'name': 'Example Store',
-                  'latitude': 40.7128,
-                  'longitude': -74.0060
-                };
-
-                // Convert the map to Map<String, dynamic>
-                Map<String, dynamic> storeDataStringKey = storeData.cast<String, dynamic>();
-
-                // Create a Store object from the map
-                Store store = Store.fromMap(storeDataStringKey);
-
+        child: ListView.builder(
+          itemCount: stores.length,
+          itemBuilder: (context, index) {
+            Store store = stores[index];
+            return ListTile(
+              title: Text(store.name),
+              onTap: () {
+                // Get the user's email (replace with your actual logic to retrieve the user's email)
+                String userEmail = 'user@example.com';
+                
                 // Call function to add store to favorites
-                addStoreToFavorite(context, store);
+                storeProvider.addFavorite(userEmail, store.id);
+
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text('${store.name} added to favorites'),
+                    duration: Duration(seconds: 2),
+                  ),
+                );
               },
-              child: const Text('Add to Favorites'),
-            ),
-          ],
+            );
+          },
         ),
       ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          // Navigate back to previous screen
+          Navigator.pop(context);
+          // Then navigate to FavoritesScreen
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => FavoritesScreen()),
+          );
+        },
+        child: Icon(Icons.favorite),
+      ),
     );
-  }
-
-  void addStoreToFavorite(BuildContext context, Store store) {
-    // Perform logic to add store to favorites here
-    // For demonstration, just print the store name
-    print('Added ${store.name} to favorites!');
-
-    // You can also use a provider here to update the list of favorite stores
   }
 }
