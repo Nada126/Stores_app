@@ -1,16 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../../../models/store.dart'; // Import your Store class
-import '../../../providers/store_provider.dart'; // Import your StoreProvider class
-import 'favorites_screen.dart'; // Import the FavoritesScreen
+import '../../../models/store.dart';
+import '../../../providers/store_provider.dart';
+import 'favorites_screen.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class AddToFavoritesScreen extends StatelessWidget {
-  const AddToFavoritesScreen({Key? key});
+  const AddToFavoritesScreen({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    final storeProvider = Provider.of<StoreProvider>(context);
-    List<Store> stores = storeProvider.stores; // Assuming you have a list of stores
+    final storeProvider = Provider.of<StoreProvider>(context, listen: false);
+    List<Store> stores = storeProvider.stores;
 
     return Scaffold(
       appBar: AppBar(
@@ -24,19 +25,39 @@ class AddToFavoritesScreen extends StatelessWidget {
             Store store = stores[index];
             return ListTile(
               title: Text(store.name),
-              onTap: () {
-                // Get the user's email (replace with your actual logic to retrieve the user's email)
-                String userEmail = 'user@example.com';
-                
-                // Call function to add store to favorites
-                storeProvider.addFavorite(userEmail, store.id);
+              onTap: () async {
+                SharedPreferences prefs = await SharedPreferences.getInstance();
+                String? userEmail = prefs.getString('user_email');
 
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text('${store.name} added to favorites'),
-                    duration: Duration(seconds: 2),
-                  ),
-                );
+                if (userEmail != null) {
+                  // Call function to add store to favorites
+                  await storeProvider.addFavorite(userEmail, store.id);
+
+                  // Notify listeners of changes
+                  storeProvider.getFavorites(userEmail);
+
+                  // Update shared preferences
+                  List<String> favoriteStoreIds = prefs.getStringList(userEmail) ?? [];
+                  favoriteStoreIds.add(store.id.toString());
+                  prefs.setStringList(userEmail, favoriteStoreIds);
+
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text('${store.name} added to favorites'),
+                      duration: const Duration(seconds: 2),
+                    ),
+                  );
+
+                  // Navigate back to the previous screen
+                  Navigator.pop(context);
+                } else {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('User email not found. Please log in.'),
+                      duration: Duration(seconds: 2),
+                    ),
+                  );
+                }
               },
             );
           },
@@ -44,15 +65,10 @@ class AddToFavoritesScreen extends StatelessWidget {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-          // Navigate back to previous screen
-          Navigator.pop(context);
-          // Then navigate to FavoritesScreen
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => FavoritesScreen()),
-          );
+          // Navigate to the FavoritesScreen
+          Navigator.pushReplacementNamed(context, '/favorites');
         },
-        child: Icon(Icons.favorite),
+        child: const Icon(Icons.favorite),
       ),
     );
   }

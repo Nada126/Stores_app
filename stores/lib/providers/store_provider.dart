@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
 import '../models/store.dart';
-import '../models/user_data.dart'; // Import your UserData model
-import '../models/user_favorites.dart'; // Import your UserFavorites model
+import '../models/user_data.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class StoreProvider extends ChangeNotifier {
   late Database _db;
@@ -25,7 +25,18 @@ class StoreProvider extends ChangeNotifier {
   Future<void> initialize() async {
     _db = await _initializeDatabase();
     await _createTables();
+    _addDummyStores(); // Add dummy stores
     await fetchStores();
+  }
+
+  // Method to add dummy stores for testing
+  void _addDummyStores() {
+    _stores = [
+      Store(id: 1, name: 'Store 1', latitude: 0.0, longitude: 0.0),
+      Store(id: 2, name: 'Store 2', latitude: 0.0, longitude: 0.0),
+      Store(id: 3, name: 'Store 3', latitude: 0.0, longitude: 0.0),
+      // Add more dummy stores as needed
+    ];
   }
 
   // Initialize the database
@@ -76,7 +87,13 @@ class StoreProvider extends ChangeNotifier {
       {'user_email': userEmail, 'store_id': storeId},
       conflictAlgorithm: ConflictAlgorithm.replace,
     );
-    await getFavorites(userEmail); // Update the favorites list for the current user
+
+    // Update shared preferences
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    List<String> favoriteStoreIds = prefs.getStringList(userEmail) ?? [];
+    favoriteStoreIds.add(storeId.toString());
+    prefs.setStringList(userEmail, favoriteStoreIds);
+
     notifyListeners();
   }
 
@@ -89,7 +106,7 @@ class StoreProvider extends ChangeNotifier {
     );
 
     final List<int> storeIds =
-        maps.map<int>((item) => item['store_id']).toList();
+        maps.map<int>((item) => item['store_id'] as int).toList();
 
     // Fetch stores based on store ids
     _favorites = _stores.where((store) => storeIds.contains(store.id)).toList();

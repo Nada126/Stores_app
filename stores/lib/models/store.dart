@@ -4,7 +4,12 @@ class Store {
   final double latitude;
   final double longitude;
 
-  Store({required this.id, required this.name, required this.latitude, required this.longitude});
+  Store({
+    required this.id,
+    required this.name,
+    required this.latitude,
+    required this.longitude,
+  });
 
   factory Store.fromMap(Map<String, dynamic> json) {
     return Store(

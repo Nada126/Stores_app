@@ -5,6 +5,7 @@ import '../../../providers/store_provider.dart';
 import 'add_favorites_screen.dart'; 
 import 'favorites_screen.dart'; 
 
+
 class HomeScreen extends StatefulWidget {
   const HomeScreen({Key? key}) : super(key: key);
 
@@ -13,30 +14,7 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  @override
-  void initState() {
-    super.initState();
-    Provider.of<StoreProvider>(context, listen: false).initialize();
-  }
-
   int _selectedIndex = 0;
-
-  void _onItemTapped(int index) {
-    setState(() {
-      _selectedIndex = index;
-    });
-    if (index == 1) {
-      Navigator.push(
-        context,
-        MaterialPageRoute(builder: (context) => const AddToFavoritesScreen()),
-      );
-    } else if (index == 2) {
-      Navigator.push(
-        context,
-        MaterialPageRoute(builder: (context) => const FavoritesScreen()),
-      );
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -53,9 +31,11 @@ class _HomeScreenState extends State<HomeScreen> {
               Store store = stores[index];
               return ListTile(
                 title: Text(store.name),
-                subtitle: Text('Latitude: ${store.latitude}, Longitude: ${store.longitude}'),
+                subtitle: Text(
+                  'Latitude: ${store.latitude}, Longitude: ${store.longitude}',
+                ),
                 onTap: () {
-                  // Navigate to store details screen
+                  // Handle tap on the store tile if needed
                 },
               );
             },
@@ -81,5 +61,22 @@ class _HomeScreenState extends State<HomeScreen> {
         ],
       ),
     );
+  }
+
+  void _onItemTapped(int index) {
+    setState(() {
+      _selectedIndex = index;
+    });
+    if (index == 1) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => const AddToFavoritesScreen()),
+      );
+    } else if (index == 2) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) =>  const FavoriteStoresScreen()),
+      );
+    }
   }
 }
