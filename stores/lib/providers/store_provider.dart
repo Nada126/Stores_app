@@ -1,9 +1,12 @@
+// import 'dart:indexed_db';
+
 import 'package:flutter/material.dart';
-import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:sqflite/sqflite.dart';
+
 import '../models/store.dart';
 import '../models/user_data.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 class StoreProvider extends ChangeNotifier {
   late Database _db;
