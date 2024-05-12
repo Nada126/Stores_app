@@ -111,9 +111,9 @@ class StoreProvider extends ChangeNotifier {
 
   void _addDummyStores() {
     _stores = [
-      Store(id: 1, name: 'Store 1', latitude: 26.1234, longitude: 30.5678),
-      Store(id: 2, name: 'Store 2', latitude: 26.2345, longitude: 30.6789),
-      Store(id: 3, name: 'Store 3', latitude: 26.3456, longitude: 30.7890),
+      Store(id: 1, name: 'Store 1', latitude: 37.7749, longitude: -122.4194),
+      Store(id: 2, name: 'Store 2', latitude: 34.0522, longitude: -118.2437),
+      Store(id: 3, name: 'Store 3', latitude: 40.7128, longitude: -74.006),
     ];
   }
 

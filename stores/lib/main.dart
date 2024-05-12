@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:stores/providers/store_provider.dart';
 import 'package:stores/providers/user_provider.dart';
 import 'package:stores/screens/favorites_screen.dart';
+import 'notifiers/favorite_store_notifier.dart';
 import 'screens/signup.dart';
 import 'screens/home_screen.dart';
 import 'screens/login.dart';
@@ -19,7 +20,8 @@ class MyApp extends StatelessWidget {
     return MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (_) => StoreProvider()),
-        ChangeNotifierProvider(create: (_) => UserProvider()), // Provide the UserProvider
+        ChangeNotifierProvider(create: (_) => UserProvider()),
+        ChangeNotifierProvider(create: (_) => FavoriteStoreNotifier()),
       ],
       child: MaterialApp(
         debugShowCheckedModeBanner: false,

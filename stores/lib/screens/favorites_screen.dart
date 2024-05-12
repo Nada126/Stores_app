@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../notifiers/favorite_store_notifier.dart';
 import '../providers/store_provider.dart';
 import '../models/store.dart';
 import 'distance_screen.dart';
@@ -39,46 +40,29 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final favoriteStoreNotifier = Provider.of<FavoriteStoreNotifier>(context);
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Favorites'),
       ),
-      body: FutureBuilder<void>(
-        future: _favoritesLoader,
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
-          } else if (snapshot.hasError) {
-            return Center(child: Text('Error: ${snapshot.error}'));
-          } else {
-            return Consumer<StoreProvider>(
-              builder: (context, storeProvider, _) {
-                final List<Store> favoriteStores = storeProvider.favorites;
-                if (favoriteStores.isEmpty) {
-                  return const Center(child: Text('No favorite stores yet.'));
-                } else {
-                  return ListView.builder(
-                    itemCount: favoriteStores.length,
-                    itemBuilder: (context, index) {
-                      final store = favoriteStores[index];
-                      return ListTile(
-                        title: Text(store.name),
-                        onTap: () => _removeFavorite(store),
-                        trailing: ElevatedButton(
-                          onPressed: () => _navigateToDistanceScreen(context, store),
-                          child: const Text('Calculate Distance'),
-                        ),
-                      );
-                    },
-                  );
-                }
-              },
-            );
-          }
+      body: ListView.builder(
+        itemCount: favoriteStoreNotifier.favoriteStores.length,
+        itemBuilder: (context, index) {
+          final store = favoriteStoreNotifier.favoriteStores[index];
+          return ListTile(
+            title: Text(store.name),
+            onTap: () => _removeFavorite(store),
+            trailing: ElevatedButton(
+              onPressed: () => _navigateToDistanceScreen(context, store),
+              child: const Text('Calculate Distance'),
+            ),
+          );
         },
       ),
     );
   }
+
 
   void _navigateToDistanceScreen(BuildContext context, Store store) {
     Navigator.push(

@@ -3,7 +3,7 @@ import 'package:provider/provider.dart';
 import '../providers/store_provider.dart';
 import '../models/store.dart';
 import '../providers/user_provider.dart';
-import 'add_favorites_screen.dart';
+import 'add_favorites_screen.dart' as AddFavoritesScreen; // Import with alias
 import 'favorites_screen.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -76,7 +76,7 @@ class _HomeScreenState extends State<HomeScreen> {
     if (index == 1) {
       Navigator.push(
         context,
-        MaterialPageRoute(builder: (context) => const AddToFavoritesScreen()),
+        MaterialPageRoute(builder: (context) => const AddFavoritesScreen.AddToFavoritesScreen()), // Use the imported alias
       );
     } else if (index == 2) {
       Navigator.push(

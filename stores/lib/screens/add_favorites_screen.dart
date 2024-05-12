@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../notifiers/favorite_store_notifier.dart';
 import '../providers/store_provider.dart';
 import '../models/store.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'distance_screen.dart';
 
 class AddToFavoritesScreen extends StatelessWidget {
   const AddToFavoritesScreen({Key? key}) : super(key: key);
@@ -10,6 +12,7 @@ class AddToFavoritesScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final storeProvider = Provider.of<StoreProvider>(context, listen: false);
+    final favoriteStoreNotifier = Provider.of<FavoriteStoreNotifier>(context, listen: false);
 
     return Scaffold(
       appBar: AppBar(
@@ -36,8 +39,10 @@ class AddToFavoritesScreen extends StatelessWidget {
                       bool isFavorite = await storeProvider.isStoreFavorited(userEmail, store.id);
                       if (!isFavorite) {
                         await storeProvider.addFavorite(userEmail, store.id);
+                        favoriteStoreNotifier.addFavoriteStore(store); // Add to FavoriteStoreNotifier
                       } else {
                         await storeProvider.removeFavorite(userEmail, store.id);
+                        favoriteStoreNotifier.removeFavoriteStore(store); // Remove from FavoriteStoreNotifier
                       }
 
                       ScaffoldMessenger.of(context).showSnackBar(
