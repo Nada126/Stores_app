@@ -57,6 +57,9 @@ class _LoginPageState extends State<Login> {
     );
 
     if (userExists) {
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      await prefs.setString('user_email', emailController.text); // Store user email
+
       // Show success dialog and navigate to home screen
       showDialog(
         context: context,
@@ -67,7 +70,6 @@ class _LoginPageState extends State<Login> {
             TextButton(
               onPressed: () async {
                 Navigator.of(context).pop(); // Dismiss the dialog
-                // Navigate to home screen
                 Navigator.pushReplacementNamed(context, '/home');
               },
               child: const Text('OK'),
@@ -151,7 +153,7 @@ class _LoginPageState extends State<Login> {
               const SizedBox(height: 12),
               TextButton(
                 onPressed: () {
-                  Navigator.pushNamed(context, '/');
+                  Navigator.pushNamed(context, '/sign_up');
                 },
                 child: const Text('Create an account'),
               ),

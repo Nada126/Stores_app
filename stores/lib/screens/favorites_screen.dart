@@ -1,116 +1,89 @@
 import 'package:flutter/material.dart';
-import 'package:geolocator/geolocator.dart';
 import 'package:provider/provider.dart';
-import '../../../models/store.dart';
-import '../../../providers/store_provider.dart';
-import '../../../providers/position_provider.dart';
-import '../../../blocs/distance_bloc.dart';
-import 'package:permission_handler/permission_handler.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import '../providers/store_provider.dart';
+import '../models/store.dart';
+import 'distance_screen.dart';
 
-class FavoriteStoresScreen extends StatelessWidget {
-  const FavoriteStoresScreen({Key? key}) : super(key: key);
+class FavoritesScreen extends StatefulWidget {
+  const FavoritesScreen({Key? key}) : super(key: key);
+
+  @override
+  _FavoritesScreenState createState() => _FavoritesScreenState();
+}
+
+class _FavoritesScreenState extends State<FavoritesScreen> {
+  late Future<void> _favoritesLoader;
+  String? _userEmail;
+
+  @override
+  void initState() {
+    super.initState();
+    _favoritesLoader = _loadFavorites();
+  }
+
+  Future<void> _loadFavorites() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    _userEmail = prefs.getString('user_email');
+
+    if (_userEmail != null) {
+      await Provider.of<StoreProvider>(context, listen: false).getFavorites(_userEmail!);
+    }
+  }
+
+  void _removeFavorite(Store store) async {
+    if (_userEmail != null) {
+      Provider.of<StoreProvider>(context, listen: false).removeFavorite(_userEmail!, store.id);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
-    final distanceBloc = Provider.of<DistanceBloc>(context);
-
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Favorite Stores'),
+        title: const Text('Favorites'),
       ),
-      body: Consumer<StoreProvider>(
-        builder: (context, storeProvider, child) {
-          List<Store> favoriteStores = storeProvider.favorites;
-
-          return ListView.builder(
-            itemCount: favoriteStores.length,
-            itemBuilder: (context, index) {
-              Store store = favoriteStores[index];
-              return ListTile(
-                title: Text(store.name),
-                subtitle: Text(
-                    'Latitude: ${store.latitude}, Longitude: ${store.longitude}'),
-                trailing: ElevatedButton(
-                  onPressed: () =>
-                      _calculateDistance(context, store, distanceBloc),
-                  child: const Text('Calculate Distance'),
-                ),
-              );
-            },
-          );
+      body: FutureBuilder<void>(
+        future: _favoritesLoader,
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(child: CircularProgressIndicator());
+          } else if (snapshot.hasError) {
+            return Center(child: Text('Error: ${snapshot.error}'));
+          } else {
+            return Consumer<StoreProvider>(
+              builder: (context, storeProvider, _) {
+                final List<Store> favoriteStores = storeProvider.favorites;
+                if (favoriteStores.isEmpty) {
+                  return const Center(child: Text('No favorite stores yet.'));
+                } else {
+                  return ListView.builder(
+                    itemCount: favoriteStores.length,
+                    itemBuilder: (context, index) {
+                      final store = favoriteStores[index];
+                      return ListTile(
+                        title: Text(store.name),
+                        onTap: () => _removeFavorite(store),
+                        trailing: ElevatedButton(
+                          onPressed: () => _navigateToDistanceScreen(context, store),
+                          child: const Text('Calculate Distance'),
+                        ),
+                      );
+                    },
+                  );
+                }
+              },
+            );
+          }
         },
       ),
     );
   }
 
-  void _calculateDistance(
-      BuildContext context, Store store, DistanceBloc distanceBloc) {
-    PositionProvider positionProvider =
-        Provider.of<PositionProvider>(context, listen: false);
-    Position? currentPosition = positionProvider.currentPosition;
-
-    void requestPermission() async {
-      if (await Permission.location.request().isGranted) {
-        Geolocator.getLastKnownPosition().then((position) {
-          if (position != null) {
-            positionProvider.updatePosition(position);
-            distanceBloc.calculateDistance(position, store);
-          } else {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text('Could not determine current position.'),
-              ),
-            );
-          }
-        }).catchError((e) {
-          print(e.toString());
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text('Error getting location: $e'),
-            ),
-          );
-        });
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Permission denied to access location.'),
-          ),
-        );
-      }
-    }
-
-    void showDistance(double distance) {
-      showDialog(
-        context: context,
-        builder: (BuildContext context) {
-          return AlertDialog(
-            title: Text('Distance'),
-            content: Text('The distance to the store is $distance km.'),
-            actions: <Widget>[
-              TextButton(
-                onPressed: () {
-                  Navigator.of(context).pop();
-                },
-                child: Text('Close'),
-              ),
-            ],
-          );
-        },
-      );
-    }
-
-    if (currentPosition != null) {
-      double distanceInMeters = Geolocator.distanceBetween(
-        currentPosition.latitude,
-        currentPosition.longitude,
-        store.latitude,
-        store.longitude,
-      );
-
-      double distanceInKm = distanceInMeters / 1000;
-      showDistance(distanceInKm);
-    } else {
-      requestPermission();
-    }
+  void _navigateToDistanceScreen(BuildContext context, Store store) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => DistanceScreen(store: store)),
+    );
   }
 }

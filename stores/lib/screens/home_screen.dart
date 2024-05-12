@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../../../models/store.dart';
-import '../../../providers/store_provider.dart';
-import 'add_favorites_screen.dart'; 
-import 'favorites_screen.dart'; 
-
+import '../providers/store_provider.dart';
+import '../models/store.dart';
+import '../providers/user_provider.dart';
+import 'add_favorites_screen.dart';
+import 'favorites_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({Key? key}) : super(key: key);
@@ -21,6 +21,12 @@ class _HomeScreenState extends State<HomeScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Store List'),
+        actions: <Widget>[
+          IconButton(
+            icon: const Icon(Icons.logout),
+            onPressed: _logout,
+          ),
+        ],
       ),
       body: Consumer<StoreProvider>(
         builder: (context, storeProvider, child) {
@@ -35,7 +41,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   'Latitude: ${store.latitude}, Longitude: ${store.longitude}',
                 ),
                 onTap: () {
-                  // Handle tap on the store tile if needed
+                  _toggleFavorite(context, store);
                 },
               );
             },
@@ -75,8 +81,25 @@ class _HomeScreenState extends State<HomeScreen> {
     } else if (index == 2) {
       Navigator.push(
         context,
-        MaterialPageRoute(builder: (context) =>  const FavoriteStoresScreen()),
+        MaterialPageRoute(builder: (context) => const FavoritesScreen()),
       );
     }
+  }
+
+  void _toggleFavorite(BuildContext context, Store store) async {
+    final storeProvider = Provider.of<StoreProvider>(context, listen: false);
+    final userProvider = Provider.of<UserProvider>(context, listen: false);
+
+    final userEmail = userProvider.currentUser.email;
+
+    if (await storeProvider.isStoreFavorited(userEmail, store.id)) {
+      await storeProvider.removeFavorite(userEmail, store.id);
+    } else {
+      await storeProvider.addFavorite(userEmail, store.id);
+    }
+  }
+
+  void _logout() {
+    Navigator.pushReplacementNamed(context, '/');
   }
 }

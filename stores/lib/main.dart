@@ -1,26 +1,25 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:stores/blocs/distance_bloc.dart';
-import 'screens/signup.dart';  
+import 'package:stores/providers/store_provider.dart';
+import 'package:stores/providers/user_provider.dart';
+import 'package:stores/screens/favorites_screen.dart';
+import 'screens/signup.dart';
 import 'screens/home_screen.dart';
-import 'providers/store_provider.dart';
-import 'screens/login.dart';  
-import 'providers/position_provider.dart'; // Import the PositionProvider
+import 'screens/login.dart';
 
 void main() {
   runApp(const MyApp());
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+  const MyApp({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (_) => StoreProvider()),
-        ChangeNotifierProvider(create: (_) => PositionProvider()), // Provide the PositionProvider
-        Provider(create: (_) => DistanceBloc()),
+        ChangeNotifierProvider(create: (_) => UserProvider()), // Provide the UserProvider
       ],
       child: MaterialApp(
         debugShowCheckedModeBanner: false,
@@ -29,10 +28,11 @@ class MyApp extends StatelessWidget {
           primarySwatch: Colors.blue,
           visualDensity: VisualDensity.adaptivePlatformDensity,
         ),
-        home: const SignupPage(),
+        home: const Login(),
         routes: {
           '/home': (context) => const HomeScreen(),
-          '/login': (context) => const Login(),
+          '/sign_up': (context) => const SignupPage(),
+          '/favorites': (context) => const FavoritesScreen (),
         },
       ),
     );

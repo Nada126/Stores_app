@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../../../models/store.dart';
-import '../../../providers/store_provider.dart';
-import 'favorites_screen.dart';
+import '../providers/store_provider.dart';
+import '../models/store.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class AddToFavoritesScreen extends StatelessWidget {
@@ -11,7 +10,6 @@ class AddToFavoritesScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final storeProvider = Provider.of<StoreProvider>(context, listen: false);
-    List<Store> stores = storeProvider.stores;
 
     return Scaffold(
       appBar: AppBar(
@@ -19,45 +17,45 @@ class AddToFavoritesScreen extends StatelessWidget {
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
-        child: ListView.builder(
-          itemCount: stores.length,
-          itemBuilder: (context, index) {
-            Store store = stores[index];
-            return ListTile(
-              title: Text(store.name),
-              onTap: () async {
-                SharedPreferences prefs = await SharedPreferences.getInstance();
-                String? userEmail = prefs.getString('user_email');
+        child: Consumer<StoreProvider>(
+          builder: (context, storeProvider, _) {
+            final List<Store> stores = storeProvider.stores;
 
-                if (userEmail != null) {
-                  // Call function to add store to favorites
-                  await storeProvider.addFavorite(userEmail, store.id);
+            return ListView.builder(
+              itemCount: stores.length,
+              itemBuilder: (context, index) {
+                final Store store = stores[index];
 
-                  // Notify listeners of changes
-                  storeProvider.getFavorites(userEmail);
+                return ListTile(
+                  title: Text(store.name),
+                  onTap: () async {
+                    SharedPreferences prefs = await SharedPreferences.getInstance();
+                    String? userEmail = prefs.getString('user_email');
 
-                  // Update shared preferences
-                  List<String> favoriteStoreIds = prefs.getStringList(userEmail) ?? [];
-                  favoriteStoreIds.add(store.id.toString());
-                  prefs.setStringList(userEmail, favoriteStoreIds);
+                    if (userEmail != null) {
+                      bool isFavorite = await storeProvider.isStoreFavorited(userEmail, store.id);
+                      if (!isFavorite) {
+                        await storeProvider.addFavorite(userEmail, store.id);
+                      } else {
+                        await storeProvider.removeFavorite(userEmail, store.id);
+                      }
 
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text('${store.name} added to favorites'),
-                      duration: const Duration(seconds: 2),
-                    ),
-                  );
-
-                  // Navigate back to the previous screen
-                  Navigator.pop(context);
-                } else {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('User email not found. Please log in.'),
-                      duration: Duration(seconds: 2),
-                    ),
-                  );
-                }
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text('${store.name} ${!isFavorite ? 'added to' : 'removed from'} favorites'),
+                          duration: const Duration(seconds: 2),
+                        ),
+                      );
+                    } else {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('User email not found. Please log in.'),
+                          duration: Duration(seconds: 2),
+                        ),
+                      );
+                    }
+                  },
+                );
               },
             );
           },
@@ -65,7 +63,6 @@ class AddToFavoritesScreen extends StatelessWidget {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-          // Navigate to the FavoritesScreen
           Navigator.pushReplacementNamed(context, '/favorites');
         },
         child: const Icon(Icons.favorite),
