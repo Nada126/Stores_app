@@ -4,7 +4,7 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:provider/provider.dart';
 import '../../../models/store.dart';
 import '../../../providers/position_provider.dart';
-import '../../../blocs/distance_bloc.dart';
+import '../notifiers/distance_notifier.dart';
 
 class DistanceScreen extends StatelessWidget {
   final Store store;
@@ -16,7 +16,7 @@ class DistanceScreen extends StatelessWidget {
     return MultiProvider(
       providers: [
         ChangeNotifierProvider<PositionProvider>(create: (_) => PositionProvider()),
-        ChangeNotifierProvider<DistanceBloc>(create: (_) => DistanceBloc()), // Provide DistanceBloc
+        ChangeNotifierProvider<DistanceNotifier>(create: (_) => DistanceNotifier()), // Provide DistanceBloc
       ],
       child: Scaffold(
         appBar: AppBar(
@@ -38,7 +38,7 @@ class DistanceScreen extends StatelessWidget {
   }
 
   Widget _buildDistanceWidget(BuildContext context, Position currentPosition) {
-    final distanceBloc = Provider.of<DistanceBloc>(context, listen: false);
+    final distanceBloc = Provider.of<DistanceNotifier>(context, listen: false);
 
     final distanceInMeters = Geolocator.distanceBetween(
       currentPosition.latitude,
@@ -73,7 +73,7 @@ class DistanceScreen extends StatelessWidget {
             'Location permission not granted.',
             style: TextStyle(fontSize: 20),
           ),
-          SizedBox(height: 10),
+          const SizedBox(height: 10),
           ElevatedButton(
             onPressed: () => _requestPermission(context),
             child: const Text('Grant Permission'),

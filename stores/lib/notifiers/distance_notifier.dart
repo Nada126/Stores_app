@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import '../models/store.dart';
 
-class DistanceBloc extends ChangeNotifier { // Extend ChangeNotifier
+class DistanceNotifier extends ChangeNotifier { // Extend ChangeNotifier
   final _distanceController = StreamController<double>();
   Stream<double> get distanceStream => _distanceController.stream;
 
@@ -22,6 +22,6 @@ class DistanceBloc extends ChangeNotifier { // Extend ChangeNotifier
   @override
   void dispose() {
     _distanceController.close();
-    super.dispose(); // Don't forget to call super.dispose()
+    super.dispose();
   }
 }

@@ -59,39 +59,8 @@ class StoreProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<bool> isStoreFavorited(String userEmail, int storeId) async {
-    final List<Map<String, dynamic>> result = await _db.rawQuery(
-      'SELECT COUNT(*) AS count FROM user_favorites WHERE user_email = ? AND store_id = ?',
-      [userEmail, storeId],
-    );
-    return Sqflite.firstIntValue(result) == 1;
-  }
-
-  Future<void> addFavorite(String userEmail, int storeId) async {
-    await _db.insert(
-      'user_favorites',
-      {'user_email': userEmail, 'store_id': storeId},
-      conflictAlgorithm: ConflictAlgorithm.ignore,
-    );
-    notifyListeners();
-  }
-
-  Future<void> removeFavorite(String userEmail, int storeId) async {
-    await _db.delete(
-      'user_favorites',
-      where: 'user_email = ? AND store_id = ?',
-      whereArgs: [userEmail, storeId],
-    );
-    notifyListeners();
-  }
-
   Future<void> getFavorites(String userEmail) async {
-    if (_cachedFavorites.containsKey(userEmail)) {
-      _favorites = _stores.where((store) => _cachedFavorites[userEmail]!.contains(store.id)).toList();
-      notifyListeners();
-      return;
-    }
-
+    _favorites = [];
     final List<Map<String, dynamic>> maps = await _db.query(
       'user_favorites',
       where: 'user_email = ?',
@@ -109,12 +78,30 @@ class StoreProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  void _addDummyStores() {
-    _stores = [
-      Store(id: 1, name: 'Store 1', latitude: 37.7749, longitude: -122.4194),
-      Store(id: 2, name: 'Store 2', latitude: 34.0522, longitude: -118.2437),
-      Store(id: 3, name: 'Store 3', latitude: 40.7128, longitude: -74.006),
-    ];
+  Future<bool> isStoreFavorited(String userEmail, int storeId) async {
+    final List<Map<String, dynamic>> result = await _db.rawQuery(
+      'SELECT COUNT(*) AS count FROM user_favorites WHERE user_email = ? AND store_id = ?',
+      [userEmail, storeId],
+    );
+    return Sqflite.firstIntValue(result) == 1;
+  }
+
+  Future<void> addFavorite(String userEmail, int storeId) async {
+    await _db.insert(
+      'user_favorites',
+      {'user_email': userEmail, 'store_id': storeId},
+      conflictAlgorithm: ConflictAlgorithm.ignore,
+    );
+    await getFavorites(userEmail);
+  }
+
+  Future<void> removeFavorite(String userEmail, int storeId) async {
+    await _db.delete(
+      'user_favorites',
+      where: 'user_email = ? AND store_id = ?',
+      whereArgs: [userEmail, storeId],
+    );
+    await getFavorites(userEmail);
   }
 
   Future<bool> toggleFavorite(String userEmail, int storeId) async {
@@ -127,6 +114,11 @@ class StoreProvider extends ChangeNotifier {
     return !isFavorited;
   }
 
-
-
+  void _addDummyStores() {
+    _stores = [
+      Store(id: 1, name: 'Store 1', latitude: 37.7749, longitude: -122.4194),
+      Store(id: 2, name: 'Store 2', latitude: 34.0522, longitude: -118.2437),
+      Store(id: 3, name: 'Store 3', latitude: 40.7128, longitude: -74.0060),
+    ];
+  }
 }
